@@ -5,7 +5,7 @@ author:
   email: "armandorenuncio@proton.me"
   url: "www.linkedin.com/in/armando-renuncio-741408224"
 
-baseurl: "https://4rm4n1.github.io/"
+baseurl: /
 
 source: .
 destination: ./_site
