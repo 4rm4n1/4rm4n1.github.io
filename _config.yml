@@ -1,11 +1,11 @@
-title: Hacker-Blog
+title: 4rm4n1's Write-ups
 description: "A Jekyll Blog Theme For Hackers"
 author:
-  name: "SomeHacker"
-  email: "someone@somewebsite.somedomain"
-  url: "https://ashishchaudhary.in/hacker-blog"
+  name: "4rm4n1"
+  email: "armandorenuncio@proton.me"
+  url: "www.linkedin.com/in/armando-renuncio-741408224"
 
-baseurl: /
+baseurl: "https://4rm4n1.github.io/"
 
 source: .
 destination: ./_site
@@ -28,5 +28,5 @@ plugins:
   - jekyll-sitemap
 
 # Custom variables
-owner : "SomeHacker"
-year : "2020"
+owner : "4rm4n1"
+year : "2026"
