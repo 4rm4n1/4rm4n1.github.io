@@ -1,5 +1,19 @@
+_____________
+
+CarpeDiem es una máquina Linux de dificultad Hard que combina múltiples vectores 
+de ataque encadenados. Comenzamos enumerando subdominios para descubrir un portal 
+de motocicletas vulnerable, donde abusamos de un parámetro `login_type` interceptado 
+con Burpsuite para acceder como administrador. Desde el panel admin subimos un archivo 
+PHP malicioso obteniendo RCE dentro de un contenedor Docker. Pivotamos a través de 
+la API de Trudesk usando un token encontrado en el código fuente, recuperamos 
+credenciales de un mensaje de voz VoIP y accedemos por SSH. Para la escalada 
+aprovechamos las capabilities de `tcpdump` para capturar tráfico HTTPS cifrado, 
+extraemos la clave SSL y obtenemos credenciales del CMS Backdrop. Finalmente 
+escapamos del contenedor Docker explotando **CVE-2022-0492** para comprometer 
+la máquina como root.
 
 ![img](assets/carpeDime/portada.ong)
+___________
 ### Enumeración namp
 
 ```bash
@@ -8,6 +22,7 @@ nmap -sCV -p22,80 -n -Pn 10.10.11.167 -oN allPorts
 ```
 
 ![nmap1](assets/carpeDime/nmap1.png)
+
 Una vez enumerado los puertos procedemos a meternos a la web por el puerto 80 desde nuestro navegador. Vemos un dominio que introducimos en nuestro `/etc/hosts` para que nuestro equipo aplique la resolución de dominios. 
 
 ```bash
@@ -213,7 +228,8 @@ Vemos el script **heartbeat.sh** que hace un checksum donde si el hash **backdro
 Si vemos el script **backdrop.sh** que es propiedad de root vemos que dentro del script esta incluido el **index.php** que es propiedad de **www-data**, por lo que podemos escribir en **index.php** y se ejecutará la instrucción como **root**
 
 ![img](assets/carpeDime/cap36.png)
-![[Captura de pantalla 2024-10-09 110753.png]]
+
+![img](assets/carpeDime/recap1.png)
 
 Creamos nuestro archivo para enviarnos la revershell en un directorio que tengamos la capacidad de escribir como **www-data** y luego introducimos la instrucción en **php** para que ejecute nuestro revershell.
 
@@ -261,13 +277,14 @@ echo "[-] Escape Fail!"
 rm -r $mountDir
 ```
 
+![img](assets/carpeDime/cap37.png)
 
-![[cap37.png|550]]
-Me copio la clave a un archivo **id_rsa** y le asigno los permisos correctos para poder conectarme pos ssh `chmod + 600 id_rsa` 
+Me copio la clave a un archivo `ìd_rsa` y le asigno los permisos correctos para poder conectarme pos ssh
 
 ```bash
+chmod 600 id_rsa
 ssh -i id_rsa root@10.10.11.167
 ```
 
-![[flagroot.png]]
+![img](assets/carpeDime/flagroot.png)
 
