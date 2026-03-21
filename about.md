@@ -5,7 +5,7 @@ title: About
 
 ## whoami
 
-Profesional de ciberseguridad ofensiva con 3 años de formación práctica intensiva. 
+Entusiasta de la ciberseguridad ofensiva con 3 años de formación práctica intensiva. 
 Apasionado del hacking ético, el Red Team y la resolución de máquinas CTF.
 
 ## Certificaciones
