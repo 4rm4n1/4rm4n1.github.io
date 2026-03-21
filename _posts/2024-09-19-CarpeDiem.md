@@ -1,3 +1,4 @@
+________________________________________________________________________________________________________
 
 CarpeDiem es una máquina Linux de dificultad Hard que combina múltiples vectores 
 de ataque encadenados. Comenzamos enumerando subdominios para descubrir un portal 
@@ -12,7 +13,8 @@ escapamos del contenedor Docker explotando **CVE-2022-0492** para comprometer
 la máquina como root.
 
 ![img](assets/carpeDime/portada.ong)
-___________
+
+________________________________________________________________________________________________________
 
 ### Enumeración namp
 
