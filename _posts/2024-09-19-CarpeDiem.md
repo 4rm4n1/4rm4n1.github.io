@@ -12,7 +12,7 @@ extraemos la clave SSL y obtenemos credenciales del CMS Backdrop. Finalmente
 escapamos del contenedor Docker explotando **CVE-2022-0492** para comprometer 
 la máquina como root.
 
-![img](assets/carpeDime/portada.ong)
+![img](assets/carpeDime/portada.png)
 
 ________________________________________________________________________________________________________
 
